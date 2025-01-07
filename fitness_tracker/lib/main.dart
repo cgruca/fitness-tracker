@@ -10,8 +10,6 @@ import 'exercise.dart'; // Make sure this imports the model and the generated ad
 void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(ExerciseAdapter()); //add TypeAdapater
-  await Hive.openBox<Exercise>('exercises');
-
   var exerciseBox = await Hive.openBox<Exercise>('exercises');
 
   // Load initial data if the box is empty
@@ -20,9 +18,6 @@ void main() async {
     await loadInitialExercises(exerciseBox);
   } else {
     log("BOX FULL");
-    List<Exercise> exercises = exerciseBox.values.toList();
-    Exercise? firstExercise = exerciseBox.getAt(27); // retrieves the first item in the box
-    print(firstExercise.toString()); // Will throw an error if firstExercise is null
   }
 
   runApp(const MyApp());
@@ -95,8 +90,13 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
-  final List<String> cardTexts = ['Hello', 'Welcome', 'Fitness Tips', 'Daily Goals', 'Workout Plan'];
-
+  final List<String> cardTexts = [
+    'Hello',
+    'Welcome',
+    'Fitness Tips',
+    'Daily Goals',
+    'Workout Plan'
+  ];
 
   List _items = [];
 
@@ -117,8 +117,6 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     final item1 = _items[0];
     log('item 0: $item1');
-
-
   }
 
   void _incrementCounter() {
@@ -136,37 +134,29 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
+    var exerciseBox = Hive.box<Exercise>('exercises');
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColor.bgColor,
-        title: Text(widget.title, style: AppText.title),
-      ),
-      body: Center(
-        child: Column(
-          children: [
-            ElevatedButton(
-            child: const Text('Load Data'),
-            onPressed: readJson,
-          ),
-          _items.isNotEmpty
-              ? Expanded(
-                  child: ListView.builder(
-                    itemCount: _items.length,
-                    itemBuilder: (context, index) {
-                      return CardItem(text: _items[index]["name"]);
-                    },
-                  ),
-                )
-              : Container()
-          ]
+        appBar: AppBar(
+          backgroundColor: AppColor.bgColor,
+          title: Text(widget.title, style: AppText.title),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
-    );
+        body: ValueListenableBuilder(
+            valueListenable: exerciseBox.listenable(),
+            builder: (context, Box<Exercise> exerciseBox, _) {
+              if (exerciseBox.isEmpty) {
+                return const Center(
+                    child:
+                        CircularProgressIndicator()); // Show loading if the box is empty
+              } else {
+                return ListView.builder(
+                  itemCount: exerciseBox.length,
+                  itemBuilder: (context, index) {
+                    Exercise item = exerciseBox.getAt(index)!;
+                    return CardItem(exercise: item);
+                  },
+                );
+              }
+            }));
   }
 }
