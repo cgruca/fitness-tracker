@@ -11,5 +11,6 @@ https://www.youtube.com/watch?v=TSIhiZ5jRB0
 run on android:
 flutter emulators --launch Pixel_8_API_35
 
-## First App
-https://codelabs.developers.google.com/codelabs/flutter-codelab-first#2
+## Credit
+Data and image set from this github repo:
+https://github.com/yuhonas/free-exercise-db/
